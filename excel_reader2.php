@@ -910,7 +910,7 @@ class Spreadsheet_Excel_Reader {
 	/**
 	 * Constructor
 	 *
-	 * Some basic initialisation
+	 * Some basic initialization
 	 */
 	function Spreadsheet_Excel_Reader($file='',$store_extended_info=true,$outputEncoding='') {
 		$this->_ole =& new OLERead();

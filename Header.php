@@ -24,6 +24,8 @@ if ($helper->isCli()) {
 <link rel="stylesheet" href="bootstrap/css/phpspreadsheet.css" />
 <script src="bootstrap/js/jquery.min.js"></script>
 <script src="bootstrap/js/bootstrap.min.js"></script>
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">

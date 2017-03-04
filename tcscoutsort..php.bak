@@ -1,0 +1,155 @@
+<?php
+
+require __DIR__ . '/Header.php';
+
+error_reporting(E_ALL);
+set_time_limit(0);
+
+date_default_timezone_set('America/Chicago');
+
+include 'Classes/PHPExcel/IOFactory.php';
+
+$helper->log('Processing your file.');
+
+echo '<p>Your file is ready for <a href="output.php" target="new">pickup</a></p>';
+
+//  Open the template workbook to be written into
+try {
+   $helper->log('Loading Xls template');
+   $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xls');
+   $spreadsheet = $reader->load(__DIR__ . '/templates/tcscoutsort_template.xls');
+} catch (Exception $e) {
+     die('Error loading template file. Contact healwhans@gmail.com with the following message for support. : <br><p style="color:red;">' . $e->getMessage());
+    echo "</p>";
+  }
+
+if(isset($_FILES['file']['name'])){
+	$inputFileName = $_FILES['file']['name'];
+	$ext = pathinfo($inputFileName, PATHINFO_EXTENSION);
+
+	//Checking the file extension
+	if($ext == "xlsx"){
+
+			$file_name = $_FILES['file']['tmp_name'];
+			$inputFileName = $file_name;
+
+		//  Read uploaded Excel workbook
+		try {
+			$inputFileType = PHPExcel_IOFactory::identify($inputFileName);
+			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+			$objPHPExcel = $objReader->load($inputFileName);
+		} catch (Exception $e) {
+			die('Error loading file "' . pathinfo($inputFileName, PATHINFO_BASENAME) . '": ' . $e->getMessage());
+		}
+
+/*		//  Open the template workbook to be written into
+		try {
+			$helper->log('Loading Xls template');
+			$reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xls');
+			$spreadsheet = $reader->load(__DIR__ . '/templates/tcscoutsort_template.xls');
+                } catch (Exception $e) {
+                        die('Error loading template file. Contact healwhans@gmail.com with the following message for support. : <br><p style="color:red;">' . $e->getMessage());
+			echo "</p>";
+                }
+*/
+		$as = 1;  // initialize the ActiveSheet to the second worksheet: Den1
+		$worksheet = $spreadsheet->getActiveSheet('Den'.$as);
+
+		// Leaving markers behind
+		$helper->log('Adding new data to the template');
+		// writing meta data to the file
+		$spreadsheet->getProperties()
+			->setCreator("David Schwartzberg")
+			->setLastModifiedBy("David Schwartzberg")
+			->setTitle("Twilight Camp Scout Sort")
+			->setSubject("Twilight Camp")
+			->setDescription("Twilight Camp Scout Sorting tool results.")
+			->setKeywords("BSA Twilight Camp scouting cub scouts")
+			->setCategory("BSA scouting");
+
+		$baseRow = 5;
+
+		//Table used to display the contents of the file
+		echo '<center><table style="width:50%;" border=1>';
+
+		//  Get worksheet dimensions
+		$sheet = $objPHPExcel->getSheet(0);
+		$highestRow = $sheet->getHighestRow();
+		$highestColumn = $sheet->getHighestColumn();
+
+
+		// Create column headers
+		echo "<tr>";
+		echo "<td>First Name</td><td>Last Name</td><td>Unit</td><td>Rank</td>";
+		//  Loop through each row of the worksheet in turn
+		//for ($row = 1; $row <= $highestRow; $row++) {
+		for ($row = 2; $row <= 16; $row++) {
+			//  Read a row of data into an array
+			$rowData = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row, NULL, TRUE, FALSE);
+			echo "<tr>";
+			// echoing every cell in the selected row for simplicity.
+			foreach($rowData[0] as $k=>$v) {
+				echo "<td>".$v."</td>";
+				// if ($row != 16) {
+			                // write the UnitNumber, NameFirst, and NameLast into the template
+        			   //     $helper->log('Writing to template');
+        			        $spreadsheet->getActiveSheet('Den'.$as)->setCellValue('B'. $baseRow, $v)
+        		                        ->setCellValue('C'. $baseRow, $v)
+                        		        ->setCellValue('A'. $baseRow, $v);
+					$baseRow++;
+				//} else {
+				//	$baseRow = 5; // reset baseRow to top of worksheet
+				//	$as++;  // increment to the next worksheet
+				//}
+//var_dump($rowData[0]);
+			//echo "</tr>";
+			}
+			echo "</tr>";
+		}
+		echo '</table></center>';
+
+		// write the UnitNumber, NameFirst, and NameLast into the template
+//                $baseRow = $baseRow + $row;
+//		$helper->log('Writing to template');
+  //              $spreadsheet->getActiveSheet('Den1')->setCellValue('A5', $rowData[0][2])
+    //                            ->setCellValue('B5', $rowData[0][0])
+      //                          ->setCellValue('C5', $rowData[0][1]);
+
+	} else {
+		echo '<p style="color:red;">Please upload file with xlsx extension only</p>';
+	}
+
+}
+
+//var_dump($rowData);
+
+// Read Xls file
+//$callStartTime = microtime(true);
+//$filename = \PhpOffice\PhpSpreadsheet\IOFactory::load($spreadsheet);
+//$helper->logRead('Xls', $spreadsheet, $callStartTime);
+// Save
+$helper->write($spreadsheet, __FILE__);
+rename('/tmp/phpspreadsheet/tcscoutsort.xls', '/opt/lampp/htdocs/outbox/tcscoutsort.xls');
+
+/*
+// Redirect output to a client’s web browser (Xlsx)
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename=.$spreadsheet');
+header('Cache-Control: max-age=0');
+// If you're serving to IE 9, then the following may be needed
+header('Cache-Control: max-age=1');
+
+// If you're serving to IE over SSL, then the following may be needed
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+//header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+header('Pragma: public'); // HTTP/1.0
+
+$writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xls');
+$writer->save('php://output');
+exit;
+*/
+
+//require_once __DIR__ . '/output.php';
+
+?>

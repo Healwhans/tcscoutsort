@@ -44,7 +44,7 @@ class Sample
      */
     public function getPageTitle()
     {
-        return $this->isIndex() ? 'PHPSpreadsheet' : $this->getScriptFilename();
+        return $this->isIndex() ? 'TC Scout Sort' : $this->getScriptFilename();
     }
 
     /**
@@ -131,6 +131,7 @@ class Sample
     public function getFilename($filename, $extension = 'xlsx')
     {
         return $this->getTemporaryFolder() . '/' . str_replace('.php', '.' . $extension, basename($filename));
+	//return '/opt/lampp/htdocs/outbox/' . str_replace('.php', '.' . $extension, basename($filename));
     }
 
     /**
